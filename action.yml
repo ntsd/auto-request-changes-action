@@ -1,15 +1,20 @@
-name: 'Auto Approve'
-description: 'Automatically approve pull requests'
+name: "Auto Request Changes"
+description: "Automatically request changes pull requests"
 branding:
-  icon: 'check-circle'
-  color: 'green'
+  icon: "check-circle"
+  color: "green"
 inputs:
   github-token:
-    description: 'The GITHUB_TOKEN secret'
-    required: true
+    description: "The GITHUB_TOKEN secret"
+    default: ${{ github.token }}
+    required: false
+  comment-body:
+    description: "Comment body to show when create request changes"
+    default: "Some actions are not successful, please fix it."
+    required: false
   pull-request-number:
-    description: '(optional) The ID of a pull request to auto-approve. By default, this action tries to use the pull_request event payload.'
+    description: "(optional) The ID of a pull request to auto-request-changes. By default, this action tries to use the pull_request event payload."
     required: false
 runs:
-  using: 'node12'
-  main: 'dist/index.js'
+  using: "node12"
+  main: "dist/index.js"

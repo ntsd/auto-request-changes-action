@@ -3,9 +3,10 @@ import * as github from "@actions/github";
 import { RequestError } from "@octokit/request-error";
 import { Context } from "@actions/github/lib/context";
 
-export async function approve(
+export async function requestChanges(
   token: string,
   context: Context,
+  commentBody: string,
   prNumber?: number
 ) {
   if (!prNumber) {
@@ -22,15 +23,16 @@ export async function approve(
 
   const client = github.getOctokit(token);
 
-  core.info(`Creating approving review for pull request #${prNumber}`);
+  core.info(`Creating request changes review for pull request #${prNumber}`);
   try {
     await client.pulls.createReview({
       owner: context.repo.owner,
       repo: context.repo.repo,
       pull_number: prNumber,
-      event: "APPROVE",
+      event: "REQUEST_CHANGES",
+      body: commentBody,
     });
-    core.info(`Approved pull request #${prNumber}`);
+    core.info(`Requested changes pull request #${prNumber}`);
   } catch (error) {
     if (error instanceof RequestError) {
       switch (error.status) {
@@ -56,7 +58,7 @@ export async function approve(
           break;
         case 422:
           core.setFailed(
-            `${error.message}. This typically happens when you try to approve the pull ` +
+            `${error.message}. This typically happens when you try to request changes the pull ` +
               "request with the same user account that created the pull request. Try using " +
               "the built-in `${{ secrets.GITHUB_TOKEN }}` token, or if you're using a personal " +
               "access token, use one that belongs to a dedicated bot account."
@@ -68,7 +70,7 @@ export async function approve(
       return;
     }
 
-    core.setFailed(error.message);
+    core.setFailed((error as Error).message);
     return;
   }
 }

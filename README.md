@@ -1,78 +1,89 @@
-# Auto Approve GitHub Action
+# Auto Request Changes GitHub Action
 
-**Name:** `hmarr/auto-approve-action`
+This action is a fork from [hmarr/auto-approve-action](https://github.com/hmarr/auto-approve-action)
 
-Automatically approve GitHub pull requests. The `GITHUB_TOKEN` secret must be provided as the `github-token` input for the action to work.
+**Name:** `ntsd/auto-request-changes-action`
 
-**Important:** use v2.0.0 or later, as v1 was designed for the initial GitHub Actions beta, and no longer works.
+Automatically request changes GitHub pull requests. The `GITHUB_TOKEN` secret will default provided as the `github-token` input for the action to work. otherwise you can add a token to `github-token` input.
+
+## Why?
+
+Because sometimes you want to automate create request changes review. for example, create a request changes review when a lint or testing workflow is failed.
 
 ## Usage instructions
 
-Create a workflow file (e.g. `.github/workflows/auto-approve.yml`) that contains a step that `uses: hmarr/auto-approve-action@v2`. Here's an example workflow file:
+Create a workflow file (e.g. `.github/workflows/auto-request-changes.yml`) that contains a step that `uses: ntsd/auto-request-changes-action@v2`. Here's an example workflow file:
+
+for all github action contexts check <https://docs.github.com/en/actions/learn-github-actions/contexts>
 
 ```yaml
-name: Auto approve
+name: Auto request changes
 on: pull_request_target
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: hmarr/auto-approve-action@v2
-      with:
-        github-token: "${{ secrets.GITHUB_TOKEN }}"
+      - uses: ntsd/auto-request-changes-action@v2
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          comment-body: "custom comment body"
 ```
 
-
-Combine with an `if` clause to only auto-approve certain users. For example, to auto-approve [Dependabot][dependabot] pull requests, use:
+Combine with an `if` can only auto-request-changes with only failure workflow
 
 ```yaml
-name: Auto approve
+name: Auto request changes
 
-on:
-  pull_request_target
+on: pull_request_target
 
 jobs:
-  auto-approve:
+  auto-request-changes:
     runs-on: ubuntu-latest
     steps:
-    - uses: hmarr/auto-approve-action@v2
-      if: github.actor == 'dependabot[bot]' || github.actor == 'dependabot-preview[bot]'
-      with:
-        github-token: "${{ secrets.GITHUB_TOKEN }}"
+      - uses: ntsd/auto-request-changes-action@v2
+        if: ${{ github.event.pull_request && failure() }}
+```
+
+Using with [auto-approve-action](https://github.com/hmarr/auto-approve-action) to approve when the job success.
+
+```yaml
+name: Auto request changes and approve
+
+on: pull_request_target
+
+jobs:
+  auto-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ntsd/auto-request-changes-action@v2
+        if: ${{ github.event.pull_request && failure() }}
+      - uses: hmarr/auto-approve-action@v2
+        if: ${{ github.event.pull_request && success() }}
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
 ```
 
 If you want to use this action from a workflow file that doesn't run on the `pull_request` or `pull_request_target` events, use the `pull-request-number` input:
 
 ```yaml
-name: Auto approve
+name: Auto request changes
 
 on:
   workflow_dispatch:
     inputs: pullRequestNumber
-      description: Pull request number to auto-approve
+      description: Pull request number to auto-request-changes
       required: false
 
 jobs:
-  auto-approve:
+  auto-request-changes:
     runs-on: ubuntu-latest
     steps:
-    - uses: hmarr/auto-approve-action@v2
+    - uses: ntsd/auto-request-changes-action@v2
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
         pull-request-number: ${{ github.event.inputs.pullRequestNumber }}
 ```
-
-## Why?
-
-GitHub lets you prevent merges of unapproved pull requests. However, it's occasionally useful to selectively circumvent this restriction - for instance, some people want Dependabot's automated pull requests to not require approval.
-
-[dependabot]: https://github.com/marketplace/dependabot
 
 ## Code owners
 
 If you're using a [CODEOWNERS file](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners), you'll need to give this action a personal access token for a user listed as a code owner. Rather than using a real user's personal access token, you're probably better off creating a dedicated bot user, and adding it to a team which you assign as the code owner. That way you can restrict the bot user's permissions as much as possible, and your workflow won't break when people leave the team.
-
-## Development and release process
-
-Each major version corresponds to a branch (e.g. `v1`, `v2`). The latest major version (`v2` at the time of writing) is the repository's default branch. Releases are tagged with semver-style version numbers (e.g. `v1.2.3`).
