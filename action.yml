@@ -5,9 +5,8 @@ branding:
   color: "green"
 inputs:
   github-token:
-    description: "The Github token. By default, it will using `${{ github.token }}` to use the repo token."
-    default: ${{ github.token }}
-    required: false
+    description: "The Github token. By default, it will using GITHUB_TOKEN to use the repo token."
+    required: true
   comment-body:
     description: "The comment body to create a request changes review. The default is `Some actions are not successful, please fix it.`."
     default: "Some actions are not successful, please fix it."
