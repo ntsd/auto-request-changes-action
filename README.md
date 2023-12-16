@@ -12,7 +12,7 @@ Because sometimes you want to automate create request changes review. for exampl
 
 ## Usage instructions
 
-Create a workflow file (e.g. `.github/workflows/auto-request-changes.yml`) that contains a step that `uses: ntsd/auto-request-changes-action@v2`. Here's an example workflow file:
+Create a workflow file (e.g. `.github/workflows/auto-request-changes.yml`) that contains a step that `uses: ntsd/auto-request-changes-action@v3`. Here's an example workflow file:
 
 for all github action contexts check <https://docs.github.com/en/actions/learn-github-actions/contexts>
 
@@ -26,7 +26,7 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-      - uses: ntsd/auto-request-changes-action@v2
+      - uses: ntsd/auto-request-changes-action@v3
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           review-message: "custom review message body"
@@ -45,7 +45,7 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-      - uses: ntsd/auto-request-changes-action@v2
+      - uses: ntsd/auto-request-changes-action@v3
         if: ${{ github.event.pull_request && failure() }}
 ```
 
@@ -60,11 +60,11 @@ jobs:
   auto-review:
     runs-on: ubuntu-latest
     steps:
-      - uses: ntsd/auto-request-changes-action@v2
+      - uses: ntsd/auto-request-changes-action@v3
         permissions:
           pull-requests: write
         if: ${{ github.event.pull_request && failure() }}
-      - uses: hmarr/auto-approve-action@v2
+      - uses: hmarr/auto-approve-action@v3
         permissions:
           pull-requests: write
         if: ${{ github.event.pull_request && success() }}
@@ -89,7 +89,7 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-    - uses: ntsd/auto-request-changes-action@v2
+    - uses: ntsd/auto-request-changes-action@v3
       with:
         pull-request-number: ${{ github.event.inputs.pullRequestNumber }}
 ```
