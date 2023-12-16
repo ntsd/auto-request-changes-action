@@ -19,7 +19,7 @@ test("when a review is successfully created", async () => {
   await requestChanges("gh-tok", ghContext(), "comment-body");
 
   expect(core.info).toHaveBeenCalledWith(
-    expect.stringContaining("Requested changes pull request #101")
+    expect.stringContaining("Requested changes pull request #101"),
   );
 });
 
@@ -31,7 +31,7 @@ test("when a review is successfully created using pull-request-number", async ()
   await requestChanges("gh-tok", new Context(), "comment-body", 101);
 
   expect(core.info).toHaveBeenCalledWith(
-    expect.stringContaining("Requested changes pull request #101")
+    expect.stringContaining("Requested changes pull request #101"),
   );
 });
 
@@ -39,7 +39,7 @@ test("without a pull request", async () => {
   await requestChanges("gh-tok", new Context(), "comment-body");
 
   expect(core.setFailed).toHaveBeenCalledWith(
-    expect.stringContaining("Make sure you're triggering this")
+    expect.stringContaining("Make sure you're triggering this"),
   );
 });
 
@@ -51,7 +51,7 @@ test("when the token is invalid", async () => {
   await requestChanges("gh-tok", ghContext(), "comment-body");
 
   expect(core.setFailed).toHaveBeenCalledWith(
-    expect.stringContaining("`github-token` input parameter")
+    expect.stringContaining("`github-token` input parameter"),
   );
 });
 
@@ -63,7 +63,7 @@ test("when the token doesn't have write permissions", async () => {
   await requestChanges("gh-tok", ghContext(), "comment-body");
 
   expect(core.setFailed).toHaveBeenCalledWith(
-    expect.stringContaining("pull_request_target")
+    expect.stringContaining("pull_request_target"),
   );
 });
 
@@ -75,7 +75,7 @@ test("when a user tries to request change their own pull request", async () => {
   await requestChanges("gh-tok", ghContext(), "comment-body");
 
   expect(core.setFailed).toHaveBeenCalledWith(
-    expect.stringContaining("same user account")
+    expect.stringContaining("same user account"),
   );
 });
 
@@ -87,7 +87,7 @@ test("when the token doesn't have access to the repository", async () => {
   await requestChanges("gh-tok", ghContext(), "comment-body");
 
   expect(core.setFailed).toHaveBeenCalledWith(
-    expect.stringContaining("doesn't have access")
+    expect.stringContaining("doesn't have access"),
   );
 });
 

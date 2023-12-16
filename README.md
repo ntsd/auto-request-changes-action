@@ -23,6 +23,8 @@ on: pull_request_target
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - uses: ntsd/auto-request-changes-action@v2
         with:
@@ -40,6 +42,8 @@ on: pull_request_target
 jobs:
   auto-request-changes:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - uses: ntsd/auto-request-changes-action@v2
         if: ${{ github.event.pull_request && failure() }}
@@ -57,8 +61,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: ntsd/auto-request-changes-action@v2
+        permissions:
+          pull-requests: write
         if: ${{ github.event.pull_request && failure() }}
       - uses: hmarr/auto-approve-action@v2
+        permissions:
+          pull-requests: write
         if: ${{ github.event.pull_request && success() }}
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
@@ -78,6 +86,8 @@ on:
 jobs:
   auto-request-changes:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
     - uses: ntsd/auto-request-changes-action@v2
       with:

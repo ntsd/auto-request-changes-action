@@ -1,8 +1,8 @@
 name: "Auto Request Changes"
 description: "Automatically request changes pull requests"
 branding:
-  icon: "check-circle"
-  color: "green"
+  icon: 'x-circle'
+  color: 'red'
 inputs:
   github-token:
     description: "The Github token. By default, it will using GITHUB_TOKEN to use the repo token."
@@ -15,5 +15,5 @@ inputs:
     description: "(optional) The ID of a pull request to auto-request-changes. By default, this action tries to use the pull_request event payload."
     required: false
 runs:
-  using: "node12"
+  using: "node16"
   main: "dist/index.js"
