@@ -2,12 +2,13 @@ import * as core from "@actions/core";
 import * as github from "@actions/github";
 import { RequestError } from "@octokit/request-error";
 import { Context } from "@actions/github/lib/context";
+import { GitHub } from "@actions/github/lib/utils";
 
 export async function requestChanges(
   token: string,
   context: Context,
-  commentBody: string,
   prNumber?: number,
+  reviewMessage?: string,
 ) {
   if (!prNumber) {
     prNumber = context.payload.pull_request?.number;
@@ -23,16 +24,52 @@ export async function requestChanges(
 
   const client = github.getOctokit(token);
 
-  core.info(`Creating request changes review for pull request #${prNumber}`);
   try {
+    const { owner, repo } = context.repo;
+
+    core.info(`Fetching user, pull request information, and existing reviews`);
+    const [login, { data: pr }, { data: reviews }] = await Promise.all([
+      getLoginForToken(client),
+      client.rest.pulls.get({ owner, repo, pull_number: prNumber }),
+      client.rest.pulls.listReviews({ owner, repo, pull_number: prNumber }),
+    ]);
+
+    core.info(`Current user is ${login}`);
+
+    const prHead = pr.head.sha;
+    core.info(`Commit SHA is ${prHead}`);
+
+    // Only the most recent review for a user counts towards the review state
+    const latestReviewForUser = [...reviews]
+      .reverse()
+      .find(({ user }) => user?.login === login);
+    const alreadyReviewed = latestReviewForUser?.state === "REQUEST_CHANGES";
+
+    // If there's an request changed review from a user, but there's an outstanding review request,
+    // we need to create a new review. Review requests mean that existing "REQUEST_CHANGES" reviews
+    // don't count towards the mergeability of the PR.
+    const outstandingReviewRequest = pr.requested_reviewers?.some(
+      (reviewer) => reviewer.login == login,
+    );
+
+    if (alreadyReviewed && !outstandingReviewRequest) {
+      core.info(
+        `Current user already request changed pull request #${prNumber}, nothing to do`,
+      );
+      return;
+    }
+
+    core.info(
+      `Pull request #${prNumber} has not been request changed yet, creating approving review`,
+    );
     await client.rest.pulls.createReview({
       owner: context.repo.owner,
       repo: context.repo.repo,
       pull_number: prNumber,
+      body: reviewMessage,
       event: "REQUEST_CHANGES",
-      body: commentBody,
     });
-    core.info(`Requested changes pull request #${prNumber}`);
+    core.info(`Request Changed pull request #${prNumber}`);
   } catch (error) {
     if (error instanceof RequestError) {
       switch (error.status) {
@@ -70,7 +107,29 @@ export async function requestChanges(
       return;
     }
 
-    core.setFailed((error as Error).message);
+    if (error instanceof Error) {
+      core.setFailed(error);
+    } else {
+      core.setFailed("Unknown error");
+    }
     return;
+  }
+}
+
+async function getLoginForToken(
+  client: InstanceType<typeof GitHub>,
+): Promise<string> {
+  try {
+    const { data: user } = await client.rest.users.getAuthenticated();
+    return user.login;
+  } catch (error) {
+    if (error instanceof RequestError) {
+      // If you use the GITHUB_TOKEN provided by GitHub Actions to fetch the current user
+      // you get a 403. For now we'll assume any 403 means this is an Actions token.
+      if (error.status === 403) {
+        return "github-actions[bot]";
+      }
+    }
+    throw error;
   }
 }

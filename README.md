@@ -29,7 +29,7 @@ jobs:
       - uses: ntsd/auto-request-changes-action@v2
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
-          comment-body: "custom comment body"
+          review-message: "custom review message body"
 ```
 
 Combine with an `if` can only auto-request-changes with only failure workflow
